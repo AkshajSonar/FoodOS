@@ -14,6 +14,34 @@ func NewHandler(s *Service) *Handler {
 	return &Handler{service: s}
 }
 
+/* ---------- CREATE ORDER ---------- */
+
+type createOrderRequest struct {
+	OrderID string `json:"order_id"`
+	UserID  string `json:"user_id"`
+}
+
+func (h *Handler) CreateOrder(c *gin.Context) {
+	var req createOrderRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+
+	err := h.service.CreateOrder(c, req.OrderID, req.UserID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "order created",
+		"status":  StatusPlaced,
+	})
+}
+
+/* ---------- CHANGE STATUS (already exists) ---------- */
+
 type changeStatusRequest struct {
 	Status OrderStatus `json:"status"`
 }

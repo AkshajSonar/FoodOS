@@ -2,6 +2,7 @@ package order
 
 import (
 	"context"
+	"time"
 )
 
 type Service struct {
@@ -28,4 +29,26 @@ func (s *Service) ChangeStatus(
 	}
 
 	return s.repo.UpdateStatus(ctx, orderID, newStatus)
+}
+func (s *Service) CreateOrder(
+	ctx context.Context,
+	orderID string,
+	userID string,
+) error {
+
+	order := &Order{
+		ID:        orderID,
+		UserID:    userID,
+		Status:    StatusPlaced,
+		CreatedAt: time.Now(),
+	}
+
+	// type assertion ONLY for now (temporary)
+	memRepo, ok := s.repo.(*InMemoryRepository)
+	if !ok {
+		return nil
+	}
+
+	memRepo.Create(order)
+	return nil
 }
