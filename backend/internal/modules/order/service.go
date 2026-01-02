@@ -6,14 +6,20 @@ import (
 )
 
 type Service struct {
-	repo      Repository
-	eventRepo EventRepository
+	repo       Repository
+	eventRepo  EventRepository
+	publisher  EventPublisher
 }
 
-func NewService(r Repository, e EventRepository) *Service {
+func NewService(
+	r Repository,
+	e EventRepository,
+	p EventPublisher,
+) *Service {
 	return &Service{
 		repo:      r,
 		eventRepo: e,
+		publisher: p,
 	}
 }
 
@@ -47,6 +53,15 @@ func (s *Service) ChangeStatus(
 		NewStatus: newStatus,
 		CreatedAt: time.Now(),
 	})
+	_ = s.publisher.Publish(ctx, &OrderEvent{
+		ID:        "evt-" + orderID + "-" + string(newStatus),
+		OrderID:   orderID,
+		Type:      EventStatusChanged,
+		OldStatus: oldStatus,
+		NewStatus: newStatus,
+		CreatedAt: time.Now(),
+	})
+
 
 	return nil
 }
@@ -65,15 +80,21 @@ func (s *Service) CreateOrder(
 		CreatedAt: time.Now(),
 	}
 
-	memRepo, ok := s.repo.(*InMemoryRepository)
-	if !ok {
-		return nil
+	if err := s.repo.(interface {
+		Create(*Order) error
+	}).Create(order); err != nil {
+		return err
 	}
 
-	memRepo.Create(order)
-
-	// record event
 	_ = s.eventRepo.Save(ctx, &OrderEvent{
+		ID:        "evt-" + orderID,
+		OrderID:   orderID,
+		Type:      EventOrderCreated,
+		NewStatus: StatusPlaced,
+		CreatedAt: time.Now(),
+	})
+
+	_ = s.publisher.Publish(ctx, &OrderEvent{
 		ID:        "evt-" + orderID,
 		OrderID:   orderID,
 		Type:      EventOrderCreated,
@@ -83,4 +104,3 @@ func (s *Service) CreateOrder(
 
 	return nil
 }
-

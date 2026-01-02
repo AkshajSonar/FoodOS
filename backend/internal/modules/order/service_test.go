@@ -5,9 +5,21 @@ import (
 	"testing"
 )
 
+/*
+	Mock publisher for tests
+	Implements EventPublisher but does nothing
+*/
+type noopPublisher struct{}
+
+func (n *noopPublisher) Publish(ctx context.Context, event *OrderEvent) error {
+	return nil
+}
+
 func TestChangeStatus_Success(t *testing.T) {
 	repo := NewInMemoryRepository()
-	service := NewService(repo, repo)
+	publisher := &noopPublisher{}
+
+	service := NewService(repo, repo, publisher)
 
 	// seed order
 	repo.Create(&Order{
@@ -29,7 +41,9 @@ func TestChangeStatus_Success(t *testing.T) {
 
 func TestChangeStatus_InvalidTransition(t *testing.T) {
 	repo := NewInMemoryRepository()
-	service := NewService(repo, repo)
+	publisher := &noopPublisher{}
+
+	service := NewService(repo, repo, publisher)
 
 	repo.Create(&Order{
 		ID:     "order-2",

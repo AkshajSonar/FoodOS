@@ -4,14 +4,26 @@ import (
 	"foodos-backend/internal/modules/order"
 
 	"github.com/gin-gonic/gin"
+	"foodos-backend/internal/config"
+
 )
 
 func RegisterRoutes(router *gin.Engine) {
-	// ---- Order module wiring ----
-	orderRepo := order.NewInMemoryRepository()
-	orderService := order.NewService(orderRepo, orderRepo)
-	orderHandler := order.NewHandler(orderService)
 
+	redisClient := config.NewRedisClient()
+	publisher := order.NewRedisPublisher(redisClient)
+
+	db := config.NewPostgresDB()
+
+	orderRepo := order.NewPostgresRepository(db)
+	orderService := order.NewService(
+		orderRepo,
+		orderRepo,
+		publisher,
+	)
+
+
+	orderHandler := order.NewHandler(orderService)
 
 	orders := router.Group("/orders")
 	{
