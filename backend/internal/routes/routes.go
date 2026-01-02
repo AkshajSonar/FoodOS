@@ -9,8 +9,9 @@ import (
 func RegisterRoutes(router *gin.Engine) {
 	// ---- Order module wiring ----
 	orderRepo := order.NewInMemoryRepository()
-	orderService := order.NewService(orderRepo)
+	orderService := order.NewService(orderRepo, orderRepo)
 	orderHandler := order.NewHandler(orderService)
+
 
 	orders := router.Group("/orders")
 	{

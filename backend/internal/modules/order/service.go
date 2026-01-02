@@ -6,11 +6,15 @@ import (
 )
 
 type Service struct {
-	repo Repository
+	repo      Repository
+	eventRepo EventRepository
 }
 
-func NewService(r Repository) *Service {
-	return &Service{repo: r}
+func NewService(r Repository, e EventRepository) *Service {
+	return &Service{
+		repo:      r,
+		eventRepo: e,
+	}
 }
 
 func (s *Service) ChangeStatus(
@@ -28,8 +32,26 @@ func (s *Service) ChangeStatus(
 		return ErrInvalidTransition
 	}
 
-	return s.repo.UpdateStatus(ctx, orderID, newStatus)
+	oldStatus := order.Status
+
+	if err := s.repo.UpdateStatus(ctx, orderID, newStatus); err != nil {
+		return err
+	}
+
+	// record event
+	_ = s.eventRepo.Save(ctx, &OrderEvent{
+		ID:        "evt-" + orderID + "-" + string(newStatus),
+		OrderID:   orderID,
+		Type:      EventStatusChanged,
+		OldStatus: oldStatus,
+		NewStatus: newStatus,
+		CreatedAt: time.Now(),
+	})
+
+	return nil
 }
+
+
 func (s *Service) CreateOrder(
 	ctx context.Context,
 	orderID string,
@@ -43,12 +65,22 @@ func (s *Service) CreateOrder(
 		CreatedAt: time.Now(),
 	}
 
-	// type assertion ONLY for now (temporary)
 	memRepo, ok := s.repo.(*InMemoryRepository)
 	if !ok {
 		return nil
 	}
 
 	memRepo.Create(order)
+
+	// record event
+	_ = s.eventRepo.Save(ctx, &OrderEvent{
+		ID:        "evt-" + orderID,
+		OrderID:   orderID,
+		Type:      EventOrderCreated,
+		NewStatus: StatusPlaced,
+		CreatedAt: time.Now(),
+	})
+
 	return nil
 }
+
