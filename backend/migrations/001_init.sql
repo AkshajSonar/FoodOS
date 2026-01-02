@@ -1,11 +1,11 @@
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS orders (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
     status TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL
 );
 
-CREATE TABLE order_events (
+CREATE TABLE IF NOT EXISTS order_events (
     id TEXT PRIMARY KEY,
     order_id TEXT NOT NULL,
     type TEXT NOT NULL,

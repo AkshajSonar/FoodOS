@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: foodos-postgres
+    environment:
+      POSTGRES_USER: foodos
+      POSTGRES_PASSWORD: foodos
+      POSTGRES_DB: foodos
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    container_name: foodos-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  migrate:
+    image: postgres:15
+    container_name: foodos-migrate
+    depends_on:
+      - postgres
+    volumes:
+      - ./backend/migrations:/migrations
+    environment:
+      PGPASSWORD: foodos
+    entrypoint: >
+      bash -c "
+      until pg_isready -h postgres -U foodos; do sleep 2; done &&
+      psql -h postgres -U foodos -d foodos -f /migrations/001_init.sql
+      "
+    restart: "no"
+
+  backend:
+    build:
+      context: ./backend
+    container_name: foodos-backend
+    depends_on:
+      - postgres
+      - redis
+      - migrate
+    ports:
+      - "8080:8080"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: foodos
+      POSTGRES_PASSWORD: foodos
+      POSTGRES_DB: foodos
+      REDIS_ADDR: redis:6379
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

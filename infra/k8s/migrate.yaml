@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: foodos-migrate
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          image: postgres:15
+          env:
+            - name: PGPASSWORD
+              value: foodos
+          command:
+            - bash
+            - -c
+            - |
+              until pg_isready -h postgres -U foodos; do sleep 2; done
+              psql -h postgres -U foodos -d foodos <<EOF
+              CREATE TABLE IF NOT EXISTS orders (
+                  id TEXT PRIMARY KEY,
+                  user_id TEXT NOT NULL,
+                  status TEXT NOT NULL,
+                  created_at TIMESTAMP NOT NULL
+              );
+              CREATE TABLE IF NOT EXISTS order_events (
+                  id TEXT PRIMARY KEY,
+                  order_id TEXT NOT NULL,
+                  type TEXT NOT NULL,
+                  old_status TEXT,
+                  new_status TEXT,
+                  created_at TIMESTAMP NOT NULL
+              );
+              EOF
