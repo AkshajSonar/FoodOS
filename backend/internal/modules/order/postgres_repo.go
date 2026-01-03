@@ -90,3 +90,21 @@ func (r *PostgresRepository) Save(
 
 	return err
 }
+
+func (r *PostgresRepository) List(ctx context.Context) ([]*Order, error) {
+	rows, err := r.db.QueryContext(ctx,
+		`SELECT id, user_id, status, created_at FROM orders ORDER BY created_at DESC`)
+	if err != nil { return nil, err }
+	defer rows.Close()
+
+	var res []*Order
+	for rows.Next() {
+		var o Order
+		if err := rows.Scan(&o.ID, &o.UserID, &o.Status, &o.CreatedAt); err != nil {
+			return nil, err
+		}
+		res = append(res, &o)
+	}
+	return res, nil
+}
+

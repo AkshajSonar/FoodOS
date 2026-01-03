@@ -78,4 +78,13 @@ func (h *Handler) GetOrder(c *gin.Context) {
 		"status": order.Status,
 	})
 }
+func (h *Handler) ListOrders(c *gin.Context) {
+	orders, err := h.service.List(c.Request.Context())
+	if err != nil {
+		c.JSON(500, gin.H{"error": "failed to list orders"})
+		return
+	}
+	c.JSON(200, orders)
+}
+
 

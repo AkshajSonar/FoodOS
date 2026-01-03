@@ -58,4 +58,14 @@ export function getNextStatuses(status: OrderStatus): OrderStatus[] {
       return [];
   }
 }
+export interface Order {
+  id: string;
+  userId: string;
+  status: OrderStatus;
+  createdAt: string;
+}
+
+export async function listOrders(): Promise<Order[]> {
+  return http<Order[]>("/orders");
+}
 

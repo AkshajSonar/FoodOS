@@ -14,8 +14,9 @@ const (
 )
 
 type Order struct {
-	ID        string
-	UserID    string
-	Status    OrderStatus
-	CreatedAt time.Time
+	ID        string      `json:"id"`
+	UserID    string      `json:"userId"`
+	Status    OrderStatus `json:"status"`
+	CreatedAt time.Time   `json:"createdAt"`
 }
+

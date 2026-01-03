@@ -78,4 +78,12 @@ func (r *InMemoryRepository) Save(
 	r.events = append(r.events, event)
 	return nil
 }
+func (r *InMemoryRepository) List(ctx context.Context) ([]*Order, error) {
+	out := make([]*Order, 0, len(r.orders))
+	for _, o := range r.orders {
+		out = append(out, o)
+	}
+	return out, nil
+}
+
 
