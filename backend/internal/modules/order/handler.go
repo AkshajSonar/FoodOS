@@ -63,3 +63,19 @@ func (h *Handler) ChangeOrderStatus(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "order status updated"})
 }
+func (h *Handler) GetOrder(c *gin.Context) {
+	id := c.Param("id")
+
+	order, err := h.service.GetByID(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(404, gin.H{"error": "order not found"})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"id":     order.ID,
+		"userId": order.UserID,
+		"status": order.Status,
+	})
+}
+

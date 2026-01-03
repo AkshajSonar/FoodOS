@@ -1,9 +1,11 @@
 package server
 
 import (
-	"foodos-backend/internal/routes"
 
+
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"foodos-backend/internal/routes"
 )
 
 type Server struct {
@@ -13,7 +15,17 @@ type Server struct {
 func New() *Server {
 	r := gin.Default()
 
-	// register all routes
+	r.Use(cors.New(cors.Config{
+	AllowAllOrigins: true,
+	AllowMethods: []string{
+		"GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS",
+	},
+	AllowHeaders: []string{
+		"Content-Type", "Authorization",
+	},
+}))
+
+
 	routes.RegisterRoutes(r)
 
 	return &Server{

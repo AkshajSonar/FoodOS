@@ -104,3 +104,7 @@ func (s *Service) CreateOrder(
 
 	return nil
 }
+func (s *Service) GetByID(ctx context.Context, id string) (*Order, error) {
+	return s.repo.GetByID(ctx, id)
+}
+

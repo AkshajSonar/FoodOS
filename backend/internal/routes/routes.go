@@ -28,6 +28,8 @@ func RegisterRoutes(router *gin.Engine) {
 	orders := router.Group("/orders")
 	{
 		orders.POST("", orderHandler.CreateOrder)
+		orders.GET("/:id", orderHandler.GetOrder)
 		orders.PATCH("/:id/status", orderHandler.ChangeOrderStatus)
+
 	}
 }
