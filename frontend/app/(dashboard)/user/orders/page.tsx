@@ -2,12 +2,14 @@ import { listOrders } from "@/lib/orders";
 import StatusBadge from "@/components/StatusBadge";
 import Link from "next/link";
 
-export default async function AdminOrdersPage() {
+export default async function UserOrdersPage() {
   const orders = await listOrders();
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-6">Orders</h1>
+      <h1 className="text-3xl font-bold mb-6">
+        My Orders
+      </h1>
 
       <div className="border border-neutral-800 rounded-lg overflow-hidden">
         <table className="min-w-full text-sm">
@@ -15,7 +17,6 @@ export default async function AdminOrdersPage() {
             <tr>
               <th className="px-4 py-3 text-left">Order ID</th>
               <th className="px-4 py-3 text-left">Status</th>
-              <th className="px-4 py-3 text-left">Created</th>
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
@@ -26,15 +27,12 @@ export default async function AdminOrdersPage() {
                 <td className="px-4 py-3">
                   <StatusBadge status={o.status} />
                 </td>
-                <td className="px-4 py-3 text-neutral-400">
-                  {new Date(o.createdAt).toLocaleString()}
-                </td>
                 <td className="px-4 py-3 text-right">
                   <Link
-                    href={`/admin/orders/${o.id}`}
+                    href={`/orders/${o.id}`}
                     className="text-blue-500 hover:underline"
                   >
-                    View
+                    Track
                   </Link>
                 </td>
               </tr>

@@ -5,10 +5,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"foodos-backend/internal/config"
-
+	"foodos-backend/internal/modules/auth"
 )
 
 func RegisterRoutes(router *gin.Engine) {
+	router.POST("/auth/login", auth.Login)
 
 	redisClient := config.NewRedisClient()
 	publisher := order.NewRedisPublisher(redisClient)

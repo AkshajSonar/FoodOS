@@ -1,0 +1,8 @@
+package auth
+
+type User struct {
+	ID       string
+	Email    string
+	Password string // hashed later
+	Role     string // "ADMIN" | "USER"
+}
